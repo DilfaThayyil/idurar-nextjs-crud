@@ -3,12 +3,12 @@ import Project from '@/models/project';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-    await connectDb();
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const skip = (page - 1) * limit;
     try {
+        await connectDb();
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const skip = (page - 1) * limit;
         const [projects, total] = await Promise.all([
             Project.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
             Project.countDocuments(),
@@ -21,9 +21,9 @@ export async function GET(request: Request) {
 
 
 export async function POST(req: Request) {
-    await connectDb();
-    const body = await req.json();
     try {
+        await connectDb();
+        const body = await req.json();
         const project = await Project.create(body);
         return NextResponse.json({ success: true, project }, { status: 201 });
     } catch (err) {

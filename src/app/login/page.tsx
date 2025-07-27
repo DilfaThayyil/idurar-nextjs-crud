@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import { LoginCredentials } from '@/types/auth';
@@ -7,7 +7,7 @@ import { loginUser } from '@/services/authService';
 import toast from 'react-hot-toast';
 import { useUserStore } from '@/store/userStore';
 
-export default function LoginPage() {
+function LoginWrapper() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const router = useRouter();
@@ -20,11 +20,10 @@ export default function LoginPage() {
     setError('');
     try {
       const res = await loginUser(credentials);
-      console.log(res.user)
       if (res.user) {
-        useUserStore.getState().setUser(res.user); 
+        useUserStore.getState().setUser(res.user);
       }
-      toast.success('Login successful!')
+      toast.success('Login successful!');
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unexpected error');
@@ -33,7 +32,6 @@ export default function LoginPage() {
     }
   };
 
-
   return (
     <div>
       {successMessage && (
@@ -41,12 +39,15 @@ export default function LoginPage() {
           {successMessage}
         </div>
       )}
-
-      <LoginForm
-        onSubmit={handleLogin}
-        loading={loading}
-        error={error}
-      />
+      <LoginForm onSubmit={handleLogin} loading={loading} error={error} />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-center mt-20">Loading login...</div>}>
+      <LoginWrapper />
+    </Suspense>
   );
 }
